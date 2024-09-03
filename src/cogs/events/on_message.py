@@ -2,7 +2,9 @@ import discord
 from discord.ext import commands
 
 import logging
+import time
 import sqlite3
+import random
 from typing import Dict
 
 logger = logging.getLogger("discord")
@@ -55,14 +57,26 @@ class OnMessage(commands.Cog):
 
         return user_data
 
+    def update_user_experience(self, user_data, current_time):
+        """Give a random amount of XP to a user."""
+
+        # Only allow a user to get XP once every 25 secs
+        if current_time - user_data["previous_message_timestamp"] >= 30:
+            random_xp_amount = random.randint(15, 25)
+
+            user_data["experience"] += random_xp_amount
+
+        return user_data
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         """Process messages that are received through the bot."""
+        current_time = time.time()
 
         # Only respond to messages from guilds
         if message.channel.type != "private":
-
             user_data = self.get_user_data(message)
+            user_data = self.update_user_experience(user_data, current_time)
 
 
 # TODO: Implement XP gain, level-up logic, cooldown/rate limiting, etc.
