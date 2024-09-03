@@ -41,8 +41,7 @@ class Config:
         self.dir_paths["banners"] = os.path.join(self.dir_paths["storage"], "banners")
 
         for _, curr_path in self.dir_paths.items():
-            if not os.path.exists(curr_path):
-                os.makedirs(curr_path, exist_ok=True)
+            os.makedirs(curr_path, exist_ok=True)
 
     def setup_logger(self):
         """Setup a TimedRotatingFileHandler that rotates at midnight and formats filenames dynamically."""
