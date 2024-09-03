@@ -126,6 +126,31 @@ class MyClient(commands.Bot):
 
         db = sqlite3.connect(DB_PATH)
 
+        # Create tables if they don't exist
+        cursor = db.cursor()
+
+        try:
+            logger.info("Attempting to setup tables.")
+
+            cursor.execute(
+                """
+				CREATE TABLE IF NOT EXISTS level (
+					user_id BIGINT,
+					guild_id BIGINT,
+					experience INTEGER DEFAULT 0,
+					level INTEGER DEFAULT 0,
+					disabled INTEGER DEFAULT 0,
+					PRIMARY KEY (user_id, guild_id)
+				)
+				"""
+            )
+            logger.info("Level table has been setup.")
+
+        except sqlite3.Error as e:
+            logger.critical(f"Error creating table: {e}")
+
+        cursor.close()
+
         self.db = db
 
     async def load_extensions(self):
