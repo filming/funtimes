@@ -147,7 +147,7 @@ class MyClient(commands.Bot):
             logger.info("Level table has been setup.")
 
         except sqlite3.Error as e:
-            logger.critical(f"Error creating table: {e}")
+            logger.critical("Error creating table: %s", e)
 
         cursor.close()
 
