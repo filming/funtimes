@@ -16,11 +16,11 @@ class OnMessage(commands.Cog):
     async def on_message(self, message: discord.Message) -> None:
         """Process messages that are received through the bot."""
 
-        # Only respond to messages that are from guilds
+        # Only respond to messages from guilds
         if message.channel.type != "private":
             cur = self.bot.db.cursor()
 
-            # Add user to DB if they aren't already in it
+            # Check if user exists, add if not
             res = cur.execute(
                 "SELECT * from level WHERE user_id = ? AND guild_id = ?",
                 (message.author.id, message.guild.id),
