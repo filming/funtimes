@@ -39,12 +39,6 @@ class OnMessage(commands.Cog):
                 )
                 self.bot.db.commit()
 
-                logger.info(
-                    "New user added to the level table. (userId: %s, guildId: %s)",
-                    message.author.id,
-                    message.guild.id,
-                )
-
                 user_data["experience"] = 0
                 user_data["level"] = 0
                 user_data["previous_message_timestamp"] = 0
