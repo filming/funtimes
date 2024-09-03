@@ -139,7 +139,6 @@ class MyClient(commands.Bot):
 					guild_id BIGINT,
 					experience INTEGER DEFAULT 0,
 					level INTEGER DEFAULT 0,
-					disabled INTEGER DEFAULT 0,
 					PRIMARY KEY (user_id, guild_id)
 				)
 				"""
