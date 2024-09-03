@@ -3,3 +3,5 @@ venv/
 misc/
 logs/
 .env
+storage/logs/
+storage/funtimes.db
