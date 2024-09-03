@@ -10,6 +10,7 @@ import logging
 from logging.handlers import TimedRotatingFileHandler
 import zipfile
 import time
+import sqlite3
 
 from utils.extension_paths import get_extension_paths
 
@@ -113,7 +114,19 @@ class MyClient(commands.Bot):
         self.config = config_obj
 
     def load_database(self):
-        pass
+        """Load an instance of a database into the bot."""
+
+        DB_PATH = os.path.join(self.config.dir_paths["storage"], "funtimes.db")
+
+        # Make sure DB instance exists
+        if os.path.isfile(DB_PATH):
+            logger.info("Existing database has been found.")
+        else:
+            logger.info("No database was found. A new one will be created.")
+
+        db = sqlite3.connect(DB_PATH)
+
+        self.db = db
 
     async def load_extensions(self):
         """Load all of the initial extensions into the bot."""
