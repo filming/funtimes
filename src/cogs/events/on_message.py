@@ -5,7 +5,7 @@ import logging
 import time
 import sqlite3
 import random
-from typing import Dict
+from typing import Dict, Union
 
 logger = logging.getLogger("discord")
 
@@ -16,7 +16,7 @@ class OnMessage(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    def get_user_data(self, message: discord.Message) -> Dict[str, int]:
+    def get_user_data(self, message: discord.Message) -> Dict[str, Union[int, float]]:
         """Return a dict representing the level table data of a user."""
 
         user_data = {
@@ -57,7 +57,9 @@ class OnMessage(commands.Cog):
 
         return user_data
 
-    def update_user_experience(self, user_data, current_time):
+    def update_user_experience(
+        self, user_data: dict[str, Union[int, float]], current_time: float
+    ) -> dict[str, Union[int, float]]:
         """Give a random amount of XP to a user."""
 
         # Only allow a user to get XP once every 25 secs
@@ -65,12 +67,14 @@ class OnMessage(commands.Cog):
             random_xp_amount = random.randint(15, 25)
 
             user_data["experience"] += random_xp_amount
+            user_data["previous_message_timestamp"] = current_time
 
         return user_data
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         """Process messages that are received through the bot."""
+
         current_time = time.time()
 
         # Only respond to messages from guilds
