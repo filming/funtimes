@@ -104,6 +104,7 @@ class MyClient(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.start_time = time.time()
+        self.platform = platform.system()
 
     def load_config(self):
         """Create a config obj that will store the bot variables."""

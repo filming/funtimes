@@ -16,7 +16,9 @@ class OnMessage(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
 
-    def get_user_data(self, message: discord.Message) -> Dict[str, Union[int, float]]:
+    async def get_user_data(
+        self, message: discord.Message
+    ) -> Dict[str, Union[int, float]]:
         """Return a dict representing the level table data of a user."""
 
         user_data = {
@@ -57,7 +59,7 @@ class OnMessage(commands.Cog):
 
         return user_data
 
-    def update_user_experience(
+    async def update_user_experience(
         self, user_data: dict[str, Union[int, float]], current_time: float
     ) -> dict[str, Union[int, float]]:
         """Give a random amount of XP to a user."""
@@ -71,16 +73,35 @@ class OnMessage(commands.Cog):
 
         return user_data
 
+    async def update_user_level(
+        self, message: discord.Message, user_data: dict[str, Union[int, float]]
+    ) -> dict[str, Union[int, float]]:
+        """Calculate and update the level of a user."""
+
+        currently_stored_level = user_data["level"]
+        calculated_level = int((user_data["experience"] // 62) ** 0.55)
+
+        if calculated_level > currently_stored_level:
+            user_data["level"] = calculated_level
+
+            if self.bot.platform == "Linux":
+                await message.channel.send(
+                    f"**{message.author.mention} Has Reached Level {calculated_level}!**"
+                )
+
+        return user_data
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         """Process messages that are received through the bot."""
 
         current_time = time.time()
 
-        # Only respond to messages from guilds
-        if message.channel.type != "private":
-            user_data = self.get_user_data(message)
-            user_data = self.update_user_experience(user_data, current_time)
+        # Only respond to messages from guilds and non-bot users
+        if (message.channel.type != "private") and (not message.author.bot):
+            user_data = await self.get_user_data(message)
+            user_data = await self.update_user_experience(user_data, current_time)
+            user_data = await self.update_user_level(message, user_data)
 
 
 # TODO: Implement XP gain, level-up logic, cooldown/rate limiting, etc.
