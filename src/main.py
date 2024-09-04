@@ -139,7 +139,7 @@ class MyClient(commands.Bot):
 					user_id BIGINT,
 					guild_id BIGINT,
 					experience INTEGER DEFAULT 0,
-					level INTEGER DEFAULT 0,
+					level INTEGER DEFAULT 1,
                     previous_message_timestamp REAL DEFAULT 0,
 					PRIMARY KEY (user_id, guild_id)
 				)

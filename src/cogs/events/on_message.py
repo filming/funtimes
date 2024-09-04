@@ -44,7 +44,7 @@ class OnMessage(commands.Cog):
                 self.bot.db.commit()
 
                 user_data["experience"] = 0
-                user_data["level"] = 0
+                user_data["level"] = 1
                 user_data["previous_message_timestamp"] = 0
 
             else:
@@ -64,7 +64,7 @@ class OnMessage(commands.Cog):
     ) -> dict[str, Union[int, float]]:
         """Give a random amount of XP to a user."""
 
-        # Only allow a user to get XP once every 25 secs
+        # Only allow a user to get XP once every 30 secs
         if current_time - user_data["previous_message_timestamp"] >= 30:
             random_xp_amount = random.randint(15, 25)
 
@@ -79,7 +79,7 @@ class OnMessage(commands.Cog):
         """Calculate and update the level of a user."""
 
         currently_stored_level = user_data["level"]
-        calculated_level = int((user_data["experience"] // 62) ** 0.55)
+        calculated_level = int((user_data["experience"] // 62) ** 0.55) + 1
 
         if calculated_level > currently_stored_level:
             user_data["level"] = calculated_level
