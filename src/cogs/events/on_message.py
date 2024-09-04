@@ -55,7 +55,7 @@ class OnMessage(commands.Cog):
             cur.close()
 
         except sqlite3.Error as e:
-            logger.error(f"Error fetching/adding user data: {e}")
+            logger.error("Error fetching/adding user data: %s", e)
 
         return user_data
 
@@ -91,6 +91,30 @@ class OnMessage(commands.Cog):
 
         return user_data
 
+    async def update_database(self, user_data: dict[str, Union[int, float]]) -> None:
+        """Store the updated user data object in the database."""
+
+        cur = self.bot.db.cursor()
+
+        try:
+            cur.execute(
+                "UPDATE level SET experience=?, level=?, previous_message_timestamp=? WHERE user_id=? AND guild_id=?",
+                (
+                    user_data["experience"],
+                    user_data["level"],
+                    user_data["previous_message_timestamp"],
+                    user_data["user_id"],
+                    user_data["guild_id"],
+                ),
+            )
+
+            self.bot.db.commit()
+
+        except sqlite3.Error as e:
+            logger.error("Error fetching/adding user data: %s", e)
+
+        cur.close()
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         """Process messages that are received through the bot."""
@@ -102,9 +126,7 @@ class OnMessage(commands.Cog):
             user_data = await self.get_user_data(message)
             user_data = await self.update_user_experience(user_data, current_time)
             user_data = await self.update_user_level(message, user_data)
-
-
-# TODO: Implement XP gain, level-up logic, cooldown/rate limiting, etc.
+            await self.update_database(user_data)
 
 
 async def setup(bot: commands.Bot) -> None:
