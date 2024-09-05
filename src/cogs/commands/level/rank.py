@@ -21,7 +21,6 @@ class Rank(commands.Cog):
         if not member:
             member = ctx.author
 
-        # Find member's level rank position within the guikd
         cur = self.bot.db.cursor()
 
         res = cur.execute(
@@ -41,7 +40,7 @@ class Rank(commands.Cog):
             for user in res:
                 if user[0] == member.id:
                     member_found = True
-                    member_level_obj = user  # (278688959905660928, 346, 3)
+                    member_level_obj = user
                     break
                 else:
                     member_rank_position += 1
