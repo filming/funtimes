@@ -1,12 +1,7 @@
 import discord
 from discord.ext import commands
 
-from easy_pil import Canvas, Editor, Font, Text, load_image_async
-from typing import Union
-
-from random import randint
 import logging
-import sqlite3
 
 logger = logging.getLogger("discord")
 
