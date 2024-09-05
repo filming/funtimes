@@ -46,8 +46,6 @@ class Rank(commands.Cog):
                     member_rank_position += 1
 
             if member_found:
-                rank_embed.title = f"{member.name}'s Level Stats"
-
                 experience_for_next_level = round(
                     ((member_level_obj[2] + 1) ** (1 / 0.55)) * 62
                 )
