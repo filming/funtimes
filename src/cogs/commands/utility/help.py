@@ -412,6 +412,31 @@ class HelpView(discord.ui.View):
 
 		await interaction.response.defer()
 
+		help_commands_embed = discord.Embed(
+			colour=discord.Colour.from_str("#8308f7"), title="Level",
+		)
+
+		command_list = ["rank", "server-position"]
+		description_text = "Use `$help <command>` for more info.\n```"
+		
+		for command in command_list:
+			description_text += f"\n∙ {command}"
+		
+		description_text += "```"
+
+		help_commands_embed.description = description_text
+
+		help_commands_view = HomeButtonView(
+			self.initial_interaction_author, 
+			interaction.message.content, 
+			interaction.message.embeds, 
+			button.view
+		)
+
+		await interaction.message.edit(
+			embed=help_commands_embed, view=help_commands_view
+		)
+		
 	@discord.ui.button(
 		label="Moderation", emoji="🚫", style=discord.ButtonStyle.blurple, row=0
 	)
