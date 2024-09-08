@@ -1,10 +1,6 @@
 import discord
 from discord.ext import commands
 
-import logging
-
-logger = logging.getLogger("discord")
-
 
 class OnMemberJoin(commands.Cog):
     """A cog that handles member join events and related functions."""
@@ -13,7 +9,7 @@ class OnMemberJoin(commands.Cog):
         self.bot = bot
 
     @commands.Cog.listener()
-    async def on_member_join(self, member: discord.Member):
+    async def on_member_join(self, member: discord.Member) -> None:
         """Handle a user when they join a guild."""
 
         if member.guild.id == 856417327175958528:  # FunTimes Server
