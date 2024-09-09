@@ -132,6 +132,29 @@ class OnReaction(commands.Cog):
                     self.message_to_emoji_dict[payload.message_id],
                 )
 
+    @commands.Cog.listener()
+    async def on_raw_reaction_remove(self, payload: discord.RawReactionActionEvent):
+        """Handle the event when a user removes a reaction from a message."""
+
+        if payload.guild_id == 856417327175958528:  # FunTimes Discord Server
+            # Keep a copy of the funtimes guild for quicker commands in the future
+            if not self.funtimes_guild:
+                self.funtimes_guild = self.bot.get_guild(856417327175958528)
+
+            member = self.funtimes_guild.get_member(payload.user_id)
+
+            # Handle member accepting TOS message
+            if payload.message_id == 985917177850908742 and payload.emoji.name == "✅":
+                role = self.funtimes_guild.get_role(856417327188148252)
+                await member.remove_roles(role)
+
+            # Handle member selecting a colour/location/gender/age role
+            elif payload.message_id in self.message_to_emoji_dict:
+                role = self.funtimes_guild.get_role(
+                    self.message_to_emoji_dict[payload.message_id][payload.emoji.id]
+                )
+                await member.remove_roles(role)
+
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(OnReaction(bot))
