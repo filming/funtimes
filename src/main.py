@@ -200,6 +200,7 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 intents.presences = True
+intents.reactions = True
 
 # Choose initial bot properties based on the current system-type
 platform_system = platform.system()
