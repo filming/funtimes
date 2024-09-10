@@ -12,7 +12,11 @@ class OnReaction(commands.Cog):
 
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.cached = False
         self.funtimes_guild = None
+        self.message_reactioners = {}
+        self.tos = {}
+        self.roles_channel = None
 
         # dicts are in a {emoji_id:role_id} format
         self.colour_emoji_dict = {
@@ -70,10 +74,38 @@ class OnReaction(commands.Cog):
             906637079151251547: self.age_emoji_dict,
         }
 
+    async def cache_funtimes_guild(self):
+        """Cache data from the FunTimes guild."""
+
+        # Cache the guild
+        self.funtimes_guild = self.bot.get_guild(856417327175958528)
+
+        # Cache the roles channel
+        self.roles_channel = self.bot.get_channel(856417327376367619)
+
+        # Cache the user's that have clicked on a reaction role
+        # Storage foramt example: {color_msg_id: {color_emoji_id: {user1, user2, user3...}}}
+        for message_id in self.message_to_emoji_dict:
+            message = await self.roles_channel.fetch_message(message_id)
+
+            self.message_reactioners[message_id] = {}
+
+            for reaction in message.reactions:
+                emoji_reactioners = set([user.id async for user in reaction.users()])
+
+                self.message_reactioners[message_id][
+                    reaction.emoji.id
+                ] = emoji_reactioners
+
+        # Cache the accept TOS message & role
+        role = self.funtimes_guild.get_role(856417327188148252)
+        self.tos["role"] = role
+
+        self.cached = True
+
     async def manage_roles(
         self,
         member: discord.Member,
-        channel_id: int,
         message_id: int,
         emoji_id: int,
         emoji_role_dict: Dict[int, int],
@@ -83,6 +115,7 @@ class OnReaction(commands.Cog):
         # Add new role to member
         role_to_add = self.funtimes_guild.get_role(emoji_role_dict[emoji_id])
         await member.add_roles(role_to_add)
+        self.message_reactioners[message_id][emoji_id].add(member.id)
 
         # Remove any colour roles the member already had before prior to this new role
         curr_member_colour_roles = [
@@ -93,16 +126,20 @@ class OnReaction(commands.Cog):
         await member.remove_roles(*curr_member_colour_roles)
 
         # Remove member from active list of members who selected a role (on prior roles)
-        roles_channel = self.bot.get_channel(channel_id)
-        colours_msg = await roles_channel.fetch_message(message_id)
+        message = await self.roles_channel.fetch_message(message_id)
 
-        for reaction in colours_msg.reactions:
-            if reaction.emoji.id != emoji_id:
-                users_who_reacted = [user async for user in reaction.users()]
+        for curr_emoji_id in self.message_reactioners[message_id]:
+            curr_reaction = None
 
-                for user in users_who_reacted:
-                    if user.id == member.id:
-                        await reaction.remove(user)
+            for reaction in message.reactions:
+                if reaction.emoji.id == curr_emoji_id:
+                    curr_reaction = reaction
+                    break
+
+            if (curr_emoji_id != emoji_id) and (
+                member.id in self.message_reactioners[message_id][curr_emoji_id]
+            ):
+                await curr_reaction.remove(member)
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(
@@ -111,22 +148,20 @@ class OnReaction(commands.Cog):
         """Handle the event when a user reacts with a message."""
 
         if payload.guild_id == 856417327175958528:  # FunTimes Discord Server
-            # Keep a copy of the funtimes guild for quicker commands in the future
-            if not self.funtimes_guild:
-                self.funtimes_guild = self.bot.get_guild(856417327175958528)
+            # Keep a copy of the funtimes guild & reactioners for quicker commands usages in the future
+            if not self.cached:
+                await self.cache_funtimes_guild()
 
             member = self.funtimes_guild.get_member(payload.user_id)
 
             # Handle member accepting TOS message
             if payload.message_id == 985917177850908742 and payload.emoji.name == "✅":
-                role = self.funtimes_guild.get_role(856417327188148252)
-                await member.add_roles(role)
+                await member.add_roles(self.tos["role"])
 
             # Handle member selecting a colour/location/gender/age role
             elif payload.message_id in self.message_to_emoji_dict:
                 await self.manage_roles(
                     member,
-                    payload.channel_id,
                     payload.message_id,
                     payload.emoji.id,
                     self.message_to_emoji_dict[payload.message_id],
@@ -137,16 +172,15 @@ class OnReaction(commands.Cog):
         """Handle the event when a user removes a reaction from a message."""
 
         if payload.guild_id == 856417327175958528:  # FunTimes Discord Server
-            # Keep a copy of the funtimes guild for quicker commands in the future
-            if not self.funtimes_guild:
-                self.funtimes_guild = self.bot.get_guild(856417327175958528)
+            # Keep a copy of the funtimes guild & reactioners for quicker commands usages in the future
+            if not self.cached:
+                await self.cache_funtimes_guild()
 
             member = self.funtimes_guild.get_member(payload.user_id)
 
             # Handle member accepting TOS message
             if payload.message_id == 985917177850908742 and payload.emoji.name == "✅":
-                role = self.funtimes_guild.get_role(856417327188148252)
-                await member.remove_roles(role)
+                await member.add_roles(self.tos["role"])
 
             # Handle member selecting a colour/location/gender/age role
             elif payload.message_id in self.message_to_emoji_dict:
@@ -154,6 +188,9 @@ class OnReaction(commands.Cog):
                     self.message_to_emoji_dict[payload.message_id][payload.emoji.id]
                 )
                 await member.remove_roles(role)
+                self.message_reactioners[payload.message_id][payload.emoji.id].remove(
+                    member.id
+                )
 
 
 async def setup(bot: commands.Bot) -> None:
