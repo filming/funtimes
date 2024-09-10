@@ -19,3 +19,10 @@
 - Hybrid rank commands to help track XP progress.
 - Hybrid leaderboard command to display 5 member's with the most chat experience.
 - Hybrid server position commands to help display other member's XP progress.
+
+# [1.2.0] - 
+
+## Added
+
+### General
+- Reaction roles have been added for the FunTimes server.
